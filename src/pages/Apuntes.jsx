@@ -128,7 +128,7 @@ export default function Apuntes() {
       if (!fA && !fB) return 0
       if (!fA) return 1
       if (!fB) return -1
-      return new Date(fA) - new Date(fB)
+      return fA.localeCompare(fB) // 'YYYY-MM-DD' ordena bien como texto
     })
 
   return (

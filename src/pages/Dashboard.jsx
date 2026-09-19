@@ -62,7 +62,7 @@ export default function Dashboard() {
         .map((a) => ({ ...a, tipo: 'apunte' })),
     ]
       .filter((x) => !isPast(parseISO(x.fecha)) || format(new Date(), 'yyyy-MM-dd') === x.fecha)
-      .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+      .sort((a, b) => a.fecha.localeCompare(b.fecha)) // 'YYYY-MM-DD' ordena bien como texto
 
     setProximos(conFecha.slice(0, 6))
     setAvisos(conFecha.filter((x) => differenceInCalendarDays(parseISO(x.fecha), new Date()) <= DIAS_AVISO))

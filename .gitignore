@@ -2,3 +2,6 @@ node_modules
 dist
 .env
 .DS_Store
+
+# Datos personales: no se publican
+supabase/step7b-cargar-horario.sql

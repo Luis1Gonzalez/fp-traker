@@ -191,7 +191,7 @@ export default function Tareas() {
       if (!fechaA && !fechaB) return 0
       if (!fechaA) return 1
       if (!fechaB) return -1
-      return new Date(fechaA) - new Date(fechaB)
+      return fechaA.localeCompare(fechaB) // 'YYYY-MM-DD' ordena bien como texto
     })
 
   return (

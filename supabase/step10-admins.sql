@@ -34,7 +34,7 @@ create policy "invitaciones_admin" on invitaciones
   using (es_admin() and auth.uid() = creado_por)
   with check (es_admin() and auth.uid() = creado_por);
 
--- Primer administrador. Cambia el correo si hace falta.
+-- Primer administrador. CAMBIA el correo por el tuyo antes de ejecutar.
 insert into admins (user_id)
 select id from auth.users where email = 'TU_CORREO@ejemplo.com'
 on conflict do nothing;
