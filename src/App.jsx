@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import AppLayout from './components/AppLayout'
 import Login from './pages/Login'
 import Registro from './pages/Registro'
@@ -23,7 +24,14 @@ export default function App() {
         }
       >
         <Route path="/" element={<Dashboard />} />
-        <Route path="/invitar" element={<Invitar />} />
+        <Route
+          path="/invitar"
+          element={
+            <AdminRoute>
+              <Invitar />
+            </AdminRoute>
+          }
+        />
         <Route path="/asignaturas" element={<Asignaturas />} />
         <Route path="/tareas" element={<Tareas />} />
         <Route path="/apuntes" element={<Apuntes />} />

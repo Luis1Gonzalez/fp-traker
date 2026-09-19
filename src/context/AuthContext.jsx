@@ -21,14 +21,38 @@ export function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  const signInWithPassword = (email, password) =>
+  // null = comprobando. La tabla admins solo deja ver la propia fila (RLS).
+  const [esAdmin, setEsAdmin] = useState(null)
+  const userId = session?.user?.id
+
+  useEffect(() => {
+    if (!userId) {
+      setEsAdmin(false)
+      return
+    }
+    let activo = true
+    setEsAdmin(null)
+    supabase
+      .from('admins')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (activo) setEsAdmin(!error && !!data)
+      })
+    return () => {
+      activo = false
+    }
+  }, [userId])
+
+  const signInWithPassword =(email, password) =>
     supabase.auth.signInWithPassword({ email, password })
 
   const signOut = () => supabase.auth.signOut()
 
   return (
     <AuthContext.Provider
-      value={{ session, user: session?.user ?? null, loading, signInWithPassword, signOut }}
+      value={{ session, user: session?.user ?? null, loading, esAdmin, signInWithPassword, signOut }}
     >
       {children}
     </AuthContext.Provider>

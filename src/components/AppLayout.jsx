@@ -21,14 +21,15 @@ const linksPrincipales = [
   { to: '/evaluaciones', label: 'Evals', icon: GraduationCap },
 ]
 
-const linksSecundarios = [
+const linksSecundariosBase = [
   { to: '/asignaturas', label: 'Materias', icon: BookMarked },
-  { to: '/invitar', label: 'Invitar', icon: QrCode },
+  { to: '/invitar', label: 'Invitar', icon: QrCode, soloAdmin: true },
 ]
 
 export default function AppLayout() {
-  const { signOut, user } = useAuth()
+  const { signOut, user, esAdmin } = useAuth()
   const [mostrarMas, setMostrarMas] = useState(false)
+  const linksSecundarios = linksSecundariosBase.filter((l) => !l.soloAdmin || esAdmin)
 
   return (
     <AsignaturasProvider>
