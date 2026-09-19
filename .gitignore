@@ -5,3 +5,6 @@ dist
 
 # Datos personales: no se publican
 supabase/step7b-cargar-horario.sql
+
+# Estado local de la CLI de Supabase
+supabase/.temp/
