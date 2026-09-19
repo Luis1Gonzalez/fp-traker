@@ -1,6 +1,11 @@
 -- ============================================================
--- FP TRACKER — Esquema definitivo
--- Ejecutar en el SQL Editor de Supabase
+-- FP TRACKER — Esquema base
+-- Ejecutar en el SQL Editor de Supabase, en una base NUEVA y en este orden:
+--   schema.sql, step5, step6, step7, step8, step9, step10, step11
+-- (step7b es opcional: carga datos personales del horario).
+-- NO volver a ejecutar sobre una base existente: recrearía piezas que los pasos
+-- 8-10 eliminaron o reemplazaron (consumir_invitacion, el cron de tareas y la
+-- política de invitaciones).
 -- ============================================================
 
 create extension if not exists pgcrypto;   -- gen_random_uuid()
@@ -169,6 +174,9 @@ as $$
     and terminada_at < now() - interval '15 days';
 $$;
 
+select cron.unschedule('limpiar_tareas_terminadas_diario')
+where exists (select 1 from cron.job where jobname = 'limpiar_tareas_terminadas_diario');
+
 select cron.schedule(
   'limpiar_tareas_terminadas_diario',
   '0 3 * * *',
@@ -184,18 +192,23 @@ alter table apuntes enable row level security;
 alter table evaluaciones enable row level security;
 alter table invitaciones enable row level security;
 
+drop policy if exists "asignaturas_owner" on asignaturas;
 create policy "asignaturas_owner" on asignaturas
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "tareas_owner" on tareas;
 create policy "tareas_owner" on tareas
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "apuntes_owner" on apuntes;
 create policy "apuntes_owner" on apuntes
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "evaluaciones_owner" on evaluaciones;
 create policy "evaluaciones_owner" on evaluaciones
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Invitaciones: solo el que las creó puede verlas/gestionarlas.
+drop policy if exists "invitaciones_owner" on invitaciones;
 create policy "invitaciones_owner" on invitaciones
   for all using (auth.uid() = creado_por) with check (auth.uid() = creado_por);

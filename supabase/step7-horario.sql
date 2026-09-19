@@ -16,5 +16,6 @@ create index if not exists idx_horario_dia on horario(dia_semana, hora_inicio);
 
 alter table horario enable row level security;
 
+drop policy if exists "horario_owner" on horario;
 create policy "horario_owner" on horario
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

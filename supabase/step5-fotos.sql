@@ -10,14 +10,18 @@ on conflict (id) do nothing;
 
 -- Cada usuario solo puede leer/escribir dentro de su propia carpeta
 -- (la carpeta es su user_id, la app se encarga de eso al subir el archivo)
+drop policy if exists "tarea_fotos_select_owner" on storage.objects;
 create policy "tarea_fotos_select_owner" on storage.objects
   for select using (bucket_id = 'tarea-fotos' and (storage.foldername(name))[1] = auth.uid()::text);
 
+drop policy if exists "tarea_fotos_insert_owner" on storage.objects;
 create policy "tarea_fotos_insert_owner" on storage.objects
   for insert with check (bucket_id = 'tarea-fotos' and (storage.foldername(name))[1] = auth.uid()::text);
 
+drop policy if exists "tarea_fotos_update_owner" on storage.objects;
 create policy "tarea_fotos_update_owner" on storage.objects
   for update using (bucket_id = 'tarea-fotos' and (storage.foldername(name))[1] = auth.uid()::text);
 
+drop policy if exists "tarea_fotos_delete_owner" on storage.objects;
 create policy "tarea_fotos_delete_owner" on storage.objects
   for delete using (bucket_id = 'tarea-fotos' and (storage.foldername(name))[1] = auth.uid()::text);
