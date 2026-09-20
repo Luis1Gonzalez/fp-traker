@@ -238,7 +238,7 @@ export default function Tareas() {
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: asignatura.color }} />
               <p className="text-sm font-medium">{asignatura.nombre}</p>
             </div>
-            <div className="grid sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {tareasDeMateria.map((t) => (
                 <div
                   key={t.id}

@@ -177,7 +177,7 @@ export default function Apuntes() {
               <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: g.color }} />
               <p className="text-sm font-medium">{g.nombre}</p>
             </div>
-            <div className="grid sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {g.apuntes.map((a) => (
                 <div
                   key={a.id}

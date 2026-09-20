@@ -98,7 +98,7 @@ export default function Invitar() {
       )}
 
       <p className="font-medium text-sm mb-2">Historial de invitaciones</p>
-      <div className="grid gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {invitaciones.map((inv) => {
           const est = estadoDe(inv)
           const activable = est.label === 'Activa'

@@ -87,7 +87,7 @@ export default function Asignaturas() {
         </button>
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {asignaturas.map((a) => (
           <div key={a.id} className="card p-3 flex items-center justify-between">
             <div className="flex items-center gap-3">

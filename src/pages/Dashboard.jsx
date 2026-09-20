@@ -159,7 +159,7 @@ export default function Dashboard() {
           Ver calendario
         </button>
       </div>
-      <div className="grid gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {proximos.map((item) => {
           const asignatura = getAsignatura(item.asignatura_id)
           return (

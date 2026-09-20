@@ -130,7 +130,7 @@ export default function HorarioClases() {
         ))}
       </div>
 
-      <div className="grid gap-2">
+      <div className="grid grid-cols-1 gap-2">
         {clasesDelDia.map((h) => {
           const asignatura = getAsignatura(h.asignatura_id)
           const estado = estadoClase(h)
