@@ -40,11 +40,15 @@ Deno.serve(async (req) => {
     return json({ error: 'La contraseña debe tener al menos 6 caracteres.' }, 400)
   }
 
-  const admin = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  )
+  // Clave secreta nueva (sb_secret_…), guardada como secreto de la función. Si no
+  // existe, se usa la service_role antigua que inyecta Supabase (deja de servir
+  // cuando se desactivan las claves JWT antiguas del proyecto).
+  const claveSecreta =
+    Deno.env.get('REGISTRO_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+
+  const admin = createClient(Deno.env.get('SUPABASE_URL')!, claveSecreta, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
 
   // 1) Reclamar el token de forma atómica: solo una petición puede ganarlo.
   const { data: reclamada, error: claimError } = await admin
