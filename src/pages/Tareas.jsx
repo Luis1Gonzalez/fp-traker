@@ -277,7 +277,7 @@ export default function Tareas() {
                       <button onClick={() => abrirVer(t)} className="btn-secondary p-2">
                         <MessageSquareText size={14} />
                       </button>
-                      <button onClick={() => eliminar(t.id)} className="btn-danger">
+                      <button onClick={() => eliminar(t.id)} className="btn-danger p-2">
                         <Trash2 size={15} />
                       </button>
                     </div>

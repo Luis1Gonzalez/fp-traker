@@ -276,7 +276,7 @@ export default function Evaluaciones() {
                         <button onClick={() => abrirEditar(ev)} className="btn-secondary p-1.5">
                           <Pencil size={13} />
                         </button>
-                        <button onClick={() => eliminar(ev.id)} className="btn-danger">
+                        <button onClick={() => eliminar(ev.id)} className="btn-danger p-1.5">
                           <Trash2 size={14} />
                         </button>
                       </div>
@@ -372,7 +372,7 @@ export default function Evaluaciones() {
               <button
                 type="button"
                 onClick={() => eliminar(editando.id)}
-                className="btn-secondary flex items-center justify-center gap-1.5 text-danger hover:border-danger"
+                className="btn-danger flex items-center justify-center gap-1.5"
               >
                 <Trash2 size={15} /> Eliminar evaluación
               </button>

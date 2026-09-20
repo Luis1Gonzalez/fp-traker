@@ -168,7 +168,7 @@ export default function HorarioClases() {
                 <button onClick={() => abrirEditar(h)} className="btn-secondary p-1.5">
                   <Pencil size={13} />
                 </button>
-                <button onClick={() => eliminar(h.id)} className="btn-danger">
+                <button onClick={() => eliminar(h.id)} className="btn-danger p-1.5">
                   <Trash2 size={14} />
                 </button>
               </div>

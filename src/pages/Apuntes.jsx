@@ -207,7 +207,7 @@ export default function Apuntes() {
                       <button onClick={() => abrirEditar(a)} className="btn-secondary p-2">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => eliminar(a.id)} className="btn-danger">
+                      <button onClick={() => eliminar(a.id)} className="btn-danger p-2">
                         <Trash2 size={15} />
                       </button>
                     </div>

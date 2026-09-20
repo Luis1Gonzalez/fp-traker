@@ -89,7 +89,7 @@ export default function Invitar() {
             </button>
             <button
               onClick={() => revocar(activa.id)}
-              className="btn-secondary flex-1 flex items-center justify-center gap-1.5 text-danger hover:border-danger"
+              className="btn-danger flex-1 flex items-center justify-center gap-1.5"
             >
               <Ban size={15} /> Revocar
             </button>
@@ -111,7 +111,7 @@ export default function Invitar() {
                 </p>
               </div>
               {activable && (
-                <button onClick={() => revocar(inv.id)} className="btn-secondary text-xs py-1.5 px-2.5 text-danger">
+                <button onClick={() => revocar(inv.id)} className="btn-danger text-xs py-1.5 px-2.5">
                   Revocar
                 </button>
               )}
