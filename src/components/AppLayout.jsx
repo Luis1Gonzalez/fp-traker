@@ -74,7 +74,7 @@ export default function AppLayout() {
           <p className="font-display font-semibold text-base">FP Tracker</p>
         </header>
 
-        <main className="flex-1 min-w-0 p-4pt-[calc(3.5rem+env(safe-area-inset-top,0px)+1rem)] pb-24 md:p-8 md:pt-8 md:pb-8 max-w-5xl w-full">
+        <main className="flex-1 min-w-0 p-4 pt-[calc(3.5rem+env(safe-area-inset-top,0px)+1rem)] pb-24 md:p-8 md:pt-8 md:pb-8 max-w-5xl w-full">
           <Outlet />
         </main>
 
