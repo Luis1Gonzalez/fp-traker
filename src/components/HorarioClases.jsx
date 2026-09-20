@@ -15,10 +15,14 @@ const DIAS = [
 
 const FORM_VACIO = { asignatura_id: '', dia_semana: 1, hora_inicio: '', hora_fin: '', aula: '' }
 
+// 1=lunes … 5=viernes; null en fin de semana (no hay clases "de hoy").
 function diaSemanaHoy() {
   const d = new Date().getDay() // 0=domingo … 6=sábado
-  return d >= 1 && d <= 5 ? d : 1 // si es finde, mostramos lunes por defecto
+  return d >= 1 && d <= 5 ? d : null
 }
+
+// Pestaña que se abre por defecto: hoy, o el lunes si es fin de semana.
+const diaInicial = () => diaSemanaHoy() ?? 1
 
 function horaAhora() {
   return new Date().toTimeString().slice(0, 5)
@@ -28,7 +32,7 @@ export default function HorarioClases() {
   const { user } = useAuth()
   const { asignaturas, getAsignatura } = useAsignaturas()
   const [horario, setHorario] = useState([])
-  const [diaSeleccionado, setDiaSeleccionado] = useState(diaSemanaHoy())
+  const [diaSeleccionado, setDiaSeleccionado] = useState(diaInicial())
   const [showForm, setShowForm] = useState(false)
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VACIO)
