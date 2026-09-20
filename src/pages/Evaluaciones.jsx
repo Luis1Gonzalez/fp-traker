@@ -118,6 +118,7 @@ export default function Evaluaciones() {
     if (!confirm('¿Eliminar esta evaluación?')) return
     const resultado = await supabase.from('evaluaciones').delete().eq('id', id)
     if (falla(resultado, 'No se pudo eliminar la evaluación.')) return
+    setShowForm(false) // cierra el modal si se borró desde ahí
     fetchEvaluaciones()
   }
 
@@ -367,6 +368,15 @@ export default function Evaluaciones() {
             <button type="submit" className="btn-primary mt-1">
               {editando ? 'Guardar cambios' : 'Crear evaluación'}
             </button>
+            {editando && (
+              <button
+                type="button"
+                onClick={() => eliminar(editando.id)}
+                className="btn-secondary flex items-center justify-center gap-1.5 text-danger hover:border-danger"
+              >
+                <Trash2 size={15} /> Eliminar evaluación
+              </button>
+            )}
           </form>
         </div>
       )}
