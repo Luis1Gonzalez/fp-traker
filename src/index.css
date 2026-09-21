@@ -6,7 +6,13 @@
   html {
     @apply font-sans;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
   body {
+    /* Un texto largo sin espacios (p. ej. un enlace) se parte en vez de ensanchar
+       la página: en el iPhone eso obliga a pellizcar para encajarla. */
+    overflow-wrap: anywhere;
     @apply bg-paper text-graphite-900 antialiased;
     background-image:
       linear-gradient(rgba(30, 58, 95, 0.05) 1px, transparent 1px),
@@ -30,7 +36,7 @@
     @apply bg-white border border-danger/30 text-danger px-4 py-2 rounded-md font-medium text-sm hover:border-danger hover:bg-danger/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .input-field {
-    @apply w-full bg-white border border-graphite-700/20 rounded-md px-3 py-2 text-sm text-graphite-900 placeholder:text-graphite-600/50 focus:outline-none focus:ring-2 focus:ring-blueprint-400 focus:border-blueprint-400;
+    @apply w-full bg-white border border-graphite-700/20 rounded-md px-3 py-2 text-base sm:text-sm text-graphite-900 placeholder:text-graphite-600/50 focus:outline-none focus:ring-2 focus:ring-blueprint-400 focus:border-blueprint-400;
   }
   .card {
     @apply bg-white rounded-lg border border-graphite-700/10 shadow-sm;

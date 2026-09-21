@@ -174,7 +174,7 @@ export default function Apuntes() {
         {grupos.map((g) => (
           <div key={g.key}>
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: g.color }} />
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: g.color }} />
               <p className="text-sm font-medium">{g.nombre}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

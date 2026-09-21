@@ -84,7 +84,7 @@ export default function Calendario() {
       <div className="flex items-center gap-4 mb-4 text-xs">
         {Object.entries(ETIQUETA).map(([tipo, label]) => (
           <span key={tipo} className="flex items-center gap-1.5 text-graphite-600">
-            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLOR[tipo] }} />
+            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLOR[tipo] }} />
             {label}s
           </span>
         ))}

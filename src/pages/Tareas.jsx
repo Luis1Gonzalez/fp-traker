@@ -235,7 +235,7 @@ export default function Tareas() {
         {porMateria.map(({ asignatura, tareas: tareasDeMateria }) => (
           <div key={asignatura.id}>
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: asignatura.color }} />
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: asignatura.color }} />
               <p className="text-sm font-medium">{asignatura.nombre}</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
