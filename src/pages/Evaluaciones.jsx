@@ -65,9 +65,9 @@ export default function Evaluaciones() {
     fetchEvaluaciones()
   }, [fetchEvaluaciones])
 
-  function abrirNueva(fechaPrefill) {
+  function abrirNueva() {
     setEditando(null)
-    setForm({ ...FORM_VACIO, fecha: fechaPrefill || '' })
+    setForm(FORM_VACIO)
     setShowForm(true)
   }
 
@@ -189,8 +189,7 @@ export default function Evaluaciones() {
                   return (
                     <div
                       key={dia.toISOString()}
-                      onClick={() => abrirNueva(format(dia, 'yyyy-MM-dd'))}
-                      className={`flex-1 min-w-0 min-h-[92px] rounded-md border p-1.5 cursor-pointer bg-white hover:border-blueprint-400 transition-colors ${
+                      className={`flex-1 min-w-0 min-h-[92px] rounded-md border p-1.5 bg-white ${
                         fueraDeMes ? 'opacity-35' : ''
                       }`}
                     >
@@ -207,11 +206,8 @@ export default function Evaluaciones() {
                           return (
                             <div
                               key={ev.id}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                abrirEditar(ev)
-                              }}
-                              className="text-[10px] leading-tight rounded px-1 py-0.5 truncate"
+                              onClick={() => abrirEditar(ev)}
+                              className="text-[10px] leading-tight rounded px-1 py-0.5 truncate cursor-pointer"
                               style={{
                                 backgroundColor: `${asignatura?.color || '#2B4C6F'}18`,
                                 color: asignatura?.color || '#2B4C6F',
