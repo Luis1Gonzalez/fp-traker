@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useAsignaturas } from '../context/AsignaturasContext'
 import { falla } from '../lib/notificar'
+import ElegirEvento from '../components/ElegirEvento'
 
 const FORM_VACIO = { titulo: '', evaluado: '', asignatura_id: '', fecha: '', hora: '' }
 
@@ -54,6 +55,7 @@ export default function Evaluaciones() {
   const [showForm, setShowForm] = useState(false)
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VACIO)
+  const [elegirDia, setElegirDia] = useState(null) // { dia, evs } cuando hay que elegir
 
   const fetchEvaluaciones = useCallback(async () => {
     const { data, error } = await supabase.from('evaluaciones').select('*').order('fecha', { ascending: true })
@@ -69,6 +71,12 @@ export default function Evaluaciones() {
     setEditando(null)
     setForm(FORM_VACIO)
     setShowForm(true)
+  }
+
+  // Una evaluación en el día: se abre directa. Varias: se elige primero.
+  function abrirDia(dia, evs) {
+    if (evs.length === 1) abrirEditar(evs[0])
+    else if (evs.length > 1) setElegirDia({ dia, evs })
   }
 
   function abrirEditar(ev) {
@@ -189,9 +197,10 @@ export default function Evaluaciones() {
                   return (
                     <div
                       key={dia.toISOString()}
+                      onClick={() => abrirDia(dia, evs)}
                       className={`flex-1 min-w-0 min-h-[92px] rounded-md border p-1.5 bg-white ${
-                        fueraDeMes ? 'opacity-35' : ''
-                      }`}
+                        evs.length > 0 ? 'cursor-pointer hover:border-blueprint-400 transition-colors' : ''
+                      } ${fueraDeMes ? 'opacity-35' : ''}`}
                     >
                       <span
                         className={`text-xs font-mono inline-flex items-center justify-center w-5 h-5 rounded-full ${
@@ -206,8 +215,7 @@ export default function Evaluaciones() {
                           return (
                             <div
                               key={ev.id}
-                              onClick={() => abrirEditar(ev)}
-                              className="text-[10px] leading-tight rounded px-1 py-0.5 truncate cursor-pointer"
+                              className="text-[10px] leading-tight rounded px-1 py-0.5 truncate"
                               style={{
                                 backgroundColor: `${asignatura?.color || '#2B4C6F'}18`,
                                 color: asignatura?.color || '#2B4C6F',
@@ -290,6 +298,29 @@ export default function Evaluaciones() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {elegirDia && (
+        <ElegirEvento
+          titulo={format(elegirDia.dia, "EEEE d 'de' MMMM", { locale: es })}
+          items={[...elegirDia.evs]
+            .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''))
+            .map((ev) => {
+              const asignatura = getAsignatura(ev.asignatura_id)
+              return {
+                key: ev.id,
+                value: ev,
+                color: asignatura?.color || '#2B4C6F',
+                titulo: ev.titulo,
+                detalle: [ev.hora?.slice(0, 5), asignatura?.nombre].filter(Boolean).join(' · '),
+              }
+            })}
+          onCerrar={() => setElegirDia(null)}
+          onElegir={(ev) => {
+            setElegirDia(null)
+            abrirEditar(ev)
+          }}
+        />
       )}
 
       {showForm && (

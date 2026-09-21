@@ -16,6 +16,7 @@ import { es } from 'date-fns/locale'
 import { supabase } from '../lib/supabase'
 import { falla } from '../lib/notificar'
 import { useAsignaturas } from '../context/AsignaturasContext'
+import ElegirEvento from './ElegirEvento'
 
 const COLOR = {
   evaluacion: '#E8873A', // naranja
@@ -42,6 +43,7 @@ export default function Calendario() {
   const [mesActual, setMesActual] = useState(new Date())
   const [eventos, setEventos] = useState([])
   const [verEvento, setVerEvento] = useState(null)
+  const [elegirDia, setElegirDia] = useState(null) // { dia, evs } cuando hay que elegir
 
   const fetchTodo = useCallback(async () => {
     const [evalRes, tareasRes, apuntesRes] = await Promise.all([
@@ -70,6 +72,12 @@ export default function Calendario() {
 
   const semanas = semanasLunVie(mesActual)
   const eventosDelDia = (dia) => eventos.filter((ev) => isSameDay(parseISO(ev.fecha), dia))
+
+  // Un evento en el día: se abre directo. Varios: se elige primero.
+  function abrirDia(dia, evs) {
+    if (evs.length === 1) setVerEvento(evs[0])
+    else if (evs.length > 1) setElegirDia({ dia, evs })
+  }
 
   return (
     <div>
@@ -110,9 +118,10 @@ export default function Calendario() {
               return (
                 <div
                   key={dia.toISOString()}
+                  onClick={() => abrirDia(dia, evs)}
                   className={`flex-1 min-w-0 min-h-[96px] rounded-md border p-1.5 bg-white ${
-                    fueraDeMes ? 'opacity-35' : ''
-                  }`}
+                    evs.length > 0 ? 'cursor-pointer hover:border-blueprint-400 transition-colors' : ''
+                  } ${fueraDeMes ? 'opacity-35' : ''}`}
                 >
                   <span
                     className={`text-xs font-mono inline-flex items-center justify-center w-5 h-5 rounded-full ${
@@ -125,8 +134,7 @@ export default function Calendario() {
                     {evs.map((ev) => (
                       <div
                         key={`${ev.tipo}-${ev.id}`}
-                        onClick={() => setVerEvento(ev)}
-                        className="text-[10px] leading-tight rounded px-1 py-0.5 truncate cursor-pointer"
+                        className="text-[10px] leading-tight rounded px-1 py-0.5 truncate"
                         style={{ backgroundColor: `${COLOR[ev.tipo]}22`, color: COLOR[ev.tipo] }}
                         title={ev.titulo}
                       >
@@ -141,6 +149,28 @@ export default function Calendario() {
           </div>
         ))}
       </div>
+
+      {elegirDia && (
+        <ElegirEvento
+          titulo={format(elegirDia.dia, "EEEE d 'de' MMMM", { locale: es })}
+          items={[...elegirDia.evs]
+            .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''))
+            .map((ev) => ({
+              key: `${ev.tipo}-${ev.id}`,
+              value: ev,
+              color: COLOR[ev.tipo],
+              titulo: ev.titulo,
+              detalle: [ETIQUETA[ev.tipo], ev.hora?.slice(0, 5), getAsignatura(ev.asignatura_id)?.nombre]
+                .filter(Boolean)
+                .join(' · '),
+            }))}
+          onCerrar={() => setElegirDia(null)}
+          onElegir={(ev) => {
+            setElegirDia(null)
+            setVerEvento(ev)
+          }}
+        />
+      )}
 
       {verEvento && (
         <div
