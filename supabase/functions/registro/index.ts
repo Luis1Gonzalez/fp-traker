@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     .is('usado_at', null)
     .is('revocado_at', null)
     .gt('expira_at', new Date().toISOString())
-    .select('id, ciclo_id')
+    .select('id')
     .maybeSingle()
 
   if (claimError) return json({ error: 'No se pudo procesar la invitación.' }, 500)
@@ -80,23 +80,8 @@ Deno.serve(async (req) => {
     )
   }
 
-  // 3) Si la invitación trae un ciclo, se precargan sus asignaturas y su horario.
-  //    Si falla, se deshace todo (usuario y token) para poder reintentar limpio.
-  if (reclamada.ciclo_id) {
-    const { error: plantillaError } = await admin.rpc('cargar_plantilla_ciclo', {
-      p_user_id: creado.user.id,
-      p_ciclo: reclamada.ciclo_id,
-    })
-    if (plantillaError) {
-      console.error('cargar_plantilla_ciclo falló:', plantillaError.message)
-      await admin.auth.admin.deleteUser(creado.user.id)
-      await admin.from('invitaciones').update({ usado_at: null }).eq('id', reclamada.id)
-      return json({ error: 'No se pudo preparar tu horario. Inténtalo de nuevo.' }, 500)
-    }
-  }
-
-  // 4) Registrar quién usó la invitación.
+  // 3) Registrar quién usó la invitación.
   await admin.from('invitaciones').update({ usado_por: creado.user.id }).eq('id', reclamada.id)
 
-  return json({ ok: true, ciclo: reclamada.ciclo_id ?? null })
+  return json({ ok: true })
 })

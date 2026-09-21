@@ -13,7 +13,6 @@ export default function Registro() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [cuentaCreada, setCuentaCreada] = useState(false)
-  const [cicloCargado, setCicloCargado] = useState(null) // ciclo cuyo horario se precargó
 
   useEffect(() => {
     if (!token) {
@@ -35,7 +34,7 @@ export default function Registro() {
     }
 
     setLoading(true)
-    const { data: respuesta, error: fnError } = await supabase.functions.invoke('registro', {
+    const { error: fnError } = await supabase.functions.invoke('registro', {
       body: { token, email, password },
     })
 
@@ -52,7 +51,6 @@ export default function Registro() {
       return
     }
 
-    setCicloCargado(respuesta?.ciclo ?? null)
     setCuentaCreada(true)
     setLoading(false)
   }
@@ -88,7 +86,6 @@ export default function Registro() {
           <p className="font-medium mb-2">Cuenta creada ✅</p>
           <p className="text-sm text-graphite-600 mb-4">
             Tu cuenta ya está lista, ya puedes iniciar sesión.
-            {cicloCargado && ` Tus asignaturas y tu horario de ${cicloCargado} ya están cargados.`}
           </p>
           <Link to="/login" className="btn-primary inline-block">
             Ir a iniciar sesión
