@@ -21,31 +21,32 @@ export function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  // null = comprobando. La tabla admins solo deja ver la propia fila (RLS).
-  const [esAdmin, setEsAdmin] = useState(null)
+  // La tabla admins solo deja ver la propia fila (RLS). Se guarda a qué usuario
+  // corresponde el resultado, para no arrastrar el de otra sesión anterior.
   const userId = session?.user?.id
+  const [admin, setAdmin] = useState({ id: null, valor: false })
 
   useEffect(() => {
-    if (!userId) {
-      setEsAdmin(false)
-      return
-    }
+    if (!userId) return
     let activo = true
-    setEsAdmin(null)
     supabase
       .from('admins')
       .select('user_id')
       .eq('user_id', userId)
       .maybeSingle()
       .then(({ data, error }) => {
-        if (activo) setEsAdmin(!error && !!data)
+        if (activo) setAdmin({ id: userId, valor: !error && !!data })
       })
     return () => {
       activo = false
     }
   }, [userId])
 
-  const signInWithPassword =(email, password) =>
+  // null = todavía comprobando (sesión cargando, o consulta de admin en curso).
+  // Solo es false cuando ya se sabe que no hay sesión o que no es admin.
+  const esAdmin = loading ? null : !userId ? false : admin.id === userId ? admin.valor : null
+
+  const signInWithPassword = (email, password) =>
     supabase.auth.signInWithPassword({ email, password })
 
   const signOut = () => supabase.auth.signOut()

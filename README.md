@@ -33,6 +33,7 @@ En el SQL Editor de Supabase, sobre un proyecto **nuevo** y en este orden (pega 
 6. `supabase/step9-storage-y-limpieza.sql`
 7. `supabase/step10-admins.sql` — cambia el correo del primer administrador antes de ejecutarlo
 8. `supabase/step11-mejoras-sql.sql`
+9. `supabase/step12-ciclos.sql` — plantillas de asignaturas y horario por ciclo
 
 Las asignaturas y el horario se crean desde la propia app (Materias y la pestaña Horario del panel). Un script de carga masiva con datos personales quedó fuera del repositorio a propósito.
 
@@ -53,6 +54,21 @@ Añadir otro administrador:
 ```sql
 insert into admins (user_id) select id from auth.users where email = 'correo@ejemplo.com';
 ```
+
+## Ciclos: horario precargado para cuentas nuevas
+
+Cada ciclo tiene una plantilla (asignaturas + horario). Al generar un QR en **Invitar**, el administrador elige el ciclo; quien se registre con ese QR recibe la plantilla ya cargada. Sin ciclo, la cuenta empieza vacía.
+
+Crear o actualizar la plantilla de un ciclo, a partir de las asignaturas y el horario reales de una cuenta (por ejemplo la del administrador), desde el SQL Editor:
+
+```sql
+select crear_plantilla_desde_usuario('1MST', '1º Mecanizado (1MST)', 'correo@ejemplo.com');
+```
+
+- El primer argumento es el código del ciclo, el segundo el nombre que se muestra y el tercero el correo de la cuenta de referencia.
+- Si el ciclo ya existía, su plantilla se **sustituye por completo** con lo que tenga esa cuenta en ese momento.
+- Para un ciclo nuevo: carga sus asignaturas y su horario en una cuenta desde la app (Materias y pestaña Horario del panel), ejecuta la consulta con otro código y ya aparece en el selector de Invitar.
+- Cambiar una plantilla no modifica a los usuarios que ya se registraron.
 
 ## Despliegue del frontend
 

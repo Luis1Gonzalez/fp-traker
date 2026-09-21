@@ -12,6 +12,14 @@ export default function Invitar() {
   const [invitaciones, setInvitaciones] = useState([])
   const [activa, setActiva] = useState(null)
   const [generando, setGenerando] = useState(false)
+  const [ciclos, setCiclos] = useState([])
+  const [cicloSel, setCicloSel] = useState('') // '' = sin horario precargado
+
+  const fetchCiclos = useCallback(async () => {
+    const { data, error } = await supabase.from('ciclos').select('id, nombre').order('nombre')
+    if (falla({ error }, 'No se pudo cargar la lista de ciclos.')) return
+    setCiclos(data)
+  }, [])
 
   const fetchInvitaciones = useCallback(async () => {
     const { data, error } = await supabase
@@ -24,7 +32,10 @@ export default function Invitar() {
 
   useEffect(() => {
     fetchInvitaciones()
-  }, [fetchInvitaciones])
+    fetchCiclos()
+  }, [fetchInvitaciones, fetchCiclos])
+
+  const nombreCiclo = (id) => ciclos.find((c) => c.id === id)?.nombre || id
 
   function estadoDe(inv) {
     if (inv.revocado_at) return { label: 'Revocada', color: 'text-graphite-600 bg-graphite-700/10' }
@@ -37,7 +48,7 @@ export default function Invitar() {
     setGenerando(true)
     const resultado = await supabase
       .from('invitaciones')
-      .insert({ creado_por: user.id })
+      .insert({ creado_por: user.id, ciclo_id: cicloSel || null })
       .select()
       .single()
     if (!falla(resultado, 'No se pudo generar la invitación.')) {
@@ -68,15 +79,37 @@ export default function Invitar() {
             Genera un código QR de un solo uso para que alguien se registre.
           </p>
         </div>
-        <button onClick={generarInvitacion} disabled={generando} className="btn-primary flex items-center gap-1.5">
+        <button onClick={generarInvitacion} disabled={generando} className="btn-primary flex items-center gap-1.5 shrink-0">
           <QrCode size={16} /> Generar QR
         </button>
+      </div>
+
+      <div className="mb-6 max-w-xs">
+        <label htmlFor="ciclo" className="block text-xs text-graphite-600 mb-1.5">
+          Horario que recibirá el nuevo usuario
+        </label>
+        <select
+          id="ciclo"
+          value={cicloSel}
+          onChange={(e) => setCicloSel(e.target.value)}
+          className="input-field"
+        >
+          <option value="">Ninguno (cuenta vacía)</option>
+          {ciclos.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.nombre}
+            </option>
+          ))}
+        </select>
       </div>
 
       {activa && !activa.revocado_at && (
         <div className="card p-6 mb-6 flex flex-col items-center gap-3 max-w-xs">
           <QRCodeSVG value={link} size={200} />
           <p className="text-xs text-graphite-600 font-mono break-all text-center">{link}</p>
+          {activa.ciclo_id && (
+            <p className="text-xs text-graphite-600">Cargará el horario de {nombreCiclo(activa.ciclo_id)}</p>
+          )}
           <p className="text-xs text-signal-600">
             Expira {formatDistanceToNow(new Date(activa.expira_at), { locale: es, addSuffix: true })}
           </p>
@@ -106,6 +139,9 @@ export default function Invitar() {
             <div key={inv.id} className="card p-3 flex items-center justify-between">
               <div>
                 <span className={`tag ${est.color}`}>{est.label}</span>
+                {inv.ciclo_id && (
+                  <span className="tag ml-1.5 text-graphite-600 bg-graphite-700/10">{nombreCiclo(inv.ciclo_id)}</span>
+                )}
                 <p className="text-xs text-graphite-600/70 font-mono mt-1">
                   Creada {format(new Date(inv.created_at), "d MMM yyyy, HH:mm", { locale: es })}
                 </p>
