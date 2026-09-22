@@ -85,7 +85,8 @@ export default function Registro() {
         <div className="card p-6 max-w-sm text-center">
           <p className="font-medium mb-2">Cuenta creada ✅</p>
           <p className="text-sm text-graphite-600 mb-4">
-            Tu cuenta ya está lista, ya puedes iniciar sesión.
+            Tu cuenta ya está lista, ya puedes iniciar sesión. Tus asignaturas y tu horario vienen
+            precargados; puedes editarlos o borrarlos cuando quieras en Materias y en Horario.
           </p>
           <Link to="/login" className="btn-primary inline-block">
             Ir a iniciar sesión

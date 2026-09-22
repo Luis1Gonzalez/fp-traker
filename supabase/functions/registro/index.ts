@@ -80,7 +80,20 @@ Deno.serve(async (req) => {
     )
   }
 
-  // 3) Registrar quién usó la invitación.
+  // 3) Precargar el horario por defecto. Si falla, se deshace todo (usuario y
+  //    token) para poder reintentar limpio. Si no hay origen configurado o el
+  //    origen no tiene asignaturas, la función no hace nada (no es un error).
+  const { error: horarioError } = await admin.rpc('cargar_horario_por_defecto', {
+    p_user_id: creado.user.id,
+  })
+  if (horarioError) {
+    console.error('cargar_horario_por_defecto falló:', horarioError.message)
+    await admin.auth.admin.deleteUser(creado.user.id)
+    await admin.from('invitaciones').update({ usado_at: null }).eq('id', reclamada.id)
+    return json({ error: 'No se pudo preparar tu cuenta. Inténtalo de nuevo.' }, 500)
+  }
+
+  // 4) Registrar quién usó la invitación.
   await admin.from('invitaciones').update({ usado_por: creado.user.id }).eq('id', reclamada.id)
 
   return json({ ok: true })

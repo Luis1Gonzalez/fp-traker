@@ -33,6 +33,7 @@ En el SQL Editor de Supabase, sobre un proyecto **nuevo** y en este orden (pega 
 6. `supabase/step9-storage-y-limpieza.sql`
 7. `supabase/step10-admins.sql` — cambia el correo del primer administrador antes de ejecutarlo
 8. `supabase/step11-mejoras-sql.sql`
+9. `supabase/step12-horario-por-defecto.sql` — cambia el correo antes de ejecutarlo: esa cuenta es la que presta su horario a los invitados
 
 Las asignaturas y el horario se crean desde la propia app (Materias y la pestaña Horario del panel). Un script de carga masiva con datos personales quedó fuera del repositorio a propósito.
 
@@ -53,6 +54,18 @@ Añadir otro administrador:
 ```sql
 insert into admins (user_id) select id from auth.users where email = 'correo@ejemplo.com';
 ```
+
+## Horario por defecto para cuentas nuevas
+
+Toda cuenta que se registra por invitación recibe una copia de las asignaturas y el horario de una cuenta de referencia (fila única en la tabla `configuracion`). Puede editarlo o borrarlo libremente; no afecta a la cuenta de referencia.
+
+Cambiar de quién se copia:
+
+```sql
+update configuracion set horario_origen = (select id from auth.users where email = 'correo@ejemplo.com');
+```
+
+Si `horario_origen` es `null`, o esa cuenta no tiene asignaturas cargadas, las cuentas nuevas simplemente empiezan vacías.
 
 ## Despliegue del frontend
 
