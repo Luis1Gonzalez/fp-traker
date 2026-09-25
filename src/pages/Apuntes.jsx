@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Plus, Trash2, Pencil, X, Check, CalendarClock, CalendarPlus } from 'lucide-react'
+import { Plus, Trash2, Pencil, X, Check, CalendarClock } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { supabase } from '../lib/supabase'
@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext'
 import { useAsignaturas } from '../context/AsignaturasContext'
 import { AsignaturaBadge } from '../components/Badges'
 import { falla } from '../lib/notificar'
-import { descargarICS } from '../lib/ics'
 
 const FORM_VACIO = {
   titulo: '',
@@ -343,23 +342,6 @@ export default function Apuntes() {
                 </p>
               )}
             </div>
-
-            {verApunte.calendarizado && verApunte.fecha && (
-              <button
-                onClick={() =>
-                  descargarICS({
-                    titulo: verApunte.titulo,
-                    fechaISO: verApunte.fecha,
-                    detalle: [getAsignatura(verApunte.asignatura_id)?.nombre, verApunte.contenido]
-                      .filter(Boolean)
-                      .join(' — '),
-                  })
-                }
-                className="btn-secondary w-full flex items-center justify-center gap-1.5 text-xs mb-3"
-              >
-                <CalendarPlus size={14} /> Añadir al calendario del teléfono
-              </button>
-            )}
 
             {verApunte.contenido && (
               <p className="text-sm text-graphite-800 whitespace-pre-wrap">{verApunte.contenido}</p>

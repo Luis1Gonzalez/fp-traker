@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight, CalendarPlus } from 'lucide-react'
+import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   startOfMonth,
   endOfMonth,
@@ -18,7 +18,6 @@ import { useAuth } from '../context/AuthContext'
 import { useAsignaturas } from '../context/AsignaturasContext'
 import { falla, notificar } from '../lib/notificar'
 import { errorFechaSinClase } from '../lib/horario'
-import { descargarICS } from '../lib/ics'
 import ElegirEvento from '../components/ElegirEvento'
 
 const FORM_VACIO = { titulo: '', evaluado: '', asignatura_id: '', fecha: '' }
@@ -412,25 +411,6 @@ export default function Evaluaciones() {
               />
             </div>
             {fechaError && <p className="text-danger text-xs -mt-2">{fechaError}</p>}
-
-            {form.titulo.trim() && form.asignatura_id && form.fecha && !fechaError && (
-              <button
-                type="button"
-                onClick={() =>
-                  descargarICS({
-                    titulo: form.titulo.trim(),
-                    fechaISO: form.fecha,
-                    detalle: [getAsignatura(form.asignatura_id)?.nombre, form.evaluado.trim()]
-                      .filter(Boolean)
-                      .join(' — '),
-                  })
-                }
-                className="btn-secondary w-full flex items-center justify-center gap-1.5 text-xs"
-              >
-                <CalendarPlus size={14} /> Añadir al calendario del teléfono
-              </button>
-            )}
-
             <button type="submit" disabled={guardando || !!fechaError} className="btn-primary mt-1">
               {guardando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear evaluación'}
             </button>
