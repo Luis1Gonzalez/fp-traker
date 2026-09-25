@@ -7,19 +7,6 @@ export function diaSemanaDe(fechaISO) {
   return dia >= 1 && dia <= 5 ? dia : null
 }
 
-// Hora de inicio ('HH:MM') de la primera clase de esa asignatura ese día de la
-// semana, según el horario, o null si ese día no hay clase de esa asignatura.
-export function horaSugerida(horario, asignaturaId, fechaISO) {
-  const dia = diaSemanaDe(fechaISO)
-  if (!dia || !asignaturaId) return null
-
-  const clases = horario
-    .filter((h) => h.asignatura_id === asignaturaId && h.dia_semana === dia)
-    .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
-
-  return clases[0]?.hora_inicio.slice(0, 5) ?? null
-}
-
 const NOMBRE_DIA = { 1: 'lunes', 2: 'martes', 3: 'miércoles', 4: 'jueves', 5: 'viernes' }
 
 // Días (1=lunes…5=viernes, ordenados) en que hay clase de esa asignatura según

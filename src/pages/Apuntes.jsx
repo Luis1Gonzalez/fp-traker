@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Plus, Trash2, Pencil, X, Check, CalendarClock } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext'
 import { useAsignaturas } from '../context/AsignaturasContext'
 import { AsignaturaBadge } from '../components/Badges'
 import { falla } from '../lib/notificar'
-import { horaSugerida } from '../lib/horario'
 
 const FORM_VACIO = {
   titulo: '',
@@ -15,7 +14,6 @@ const FORM_VACIO = {
   asignatura_id: '',
   calendarizado: false,
   fecha: '',
-  hora: '',
 }
 
 const COLORES_CALENDARIO = ['#2B4C6F', '#E8873A', '#4A7C59', '#B54747', '#6B5B95', '#3D6489', '#C2703D']
@@ -30,30 +28,6 @@ export default function Apuntes() {
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VACIO)
   const [verApunte, setVerApunte] = useState(null)
-  const [horario, setHorario] = useState([])
-  const ultimaSugerenciaRef = useRef(null) // para no pisar una hora que el usuario ya tocó a mano
-
-  useEffect(() => {
-    supabase
-      .from('horario')
-      .select('asignatura_id, dia_semana, hora_inicio')
-      .then(({ data, error }) => {
-        if (error) return console.error('No se pudo cargar el horario para sugerir la hora', error)
-        setHorario(data)
-      })
-  }, [])
-
-  // Si hay materia y fecha, sugiere la hora de esa clase ese día. Solo si el
-  // usuario no ha escrito ya una hora distinta a mano.
-  useEffect(() => {
-    if (!form.calendarizado) return
-    const sugerida = horaSugerida(horario, form.asignatura_id, form.fecha)
-    if (sugerida && (form.hora === '' || form.hora === ultimaSugerenciaRef.current)) {
-      setForm((f) => ({ ...f, hora: sugerida }))
-    }
-    ultimaSugerenciaRef.current = sugerida
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.asignatura_id, form.fecha, form.calendarizado, horario])
 
   const fetchApuntes = useCallback(async () => {
     const { data, error } = await supabase
@@ -72,20 +46,17 @@ export default function Apuntes() {
   function abrirNuevo() {
     setEditando(null)
     setForm(FORM_VACIO)
-    ultimaSugerenciaRef.current = null
     setShowForm(true)
   }
 
   function abrirEditar(a) {
     setEditando(a)
-    ultimaSugerenciaRef.current = null
     setForm({
       titulo: a.titulo,
       contenido: a.contenido || '',
       asignatura_id: a.asignatura_id || '',
       calendarizado: a.calendarizado,
       fecha: a.fecha || '',
-      hora: a.hora || '',
     })
     setShowForm(true)
   }
@@ -101,7 +72,7 @@ export default function Apuntes() {
       asignatura_id: form.asignatura_id || null,
       calendarizado: form.calendarizado,
       fecha: form.calendarizado ? form.fecha : null,
-      hora: form.calendarizado && form.hora ? form.hora : null,
+      hora: null, // ya no se pide; limpia cualquier hora antigua al editar
       color_calendario: form.calendarizado
         ? editando?.color_calendario || colorRandom()
         : null,
@@ -218,7 +189,6 @@ export default function Apuntes() {
                       <span className="flex items-center gap-1" style={{ color: a.color_calendario }}>
                         <CalendarClock size={12} />
                         {format(parseISO(a.fecha), 'd MMM', { locale: es })}
-                        {a.hora && ` · ${a.hora.slice(0, 5)}`}
                       </span>
                     )}
                   </div>
@@ -303,33 +273,22 @@ export default function Apuntes() {
             </label>
 
             {form.calendarizado && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-graphite-600 mb-1 block">Fecha</label>
-                  <input
-                    type="date"
-                    value={form.fecha}
-                    onChange={(e) => setForm({ ...form, fecha: e.target.value })}
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect()
-                      if (e.clientX > rect.right - 30) return
-                      try {
-                        e.currentTarget.showPicker?.()
-                      } catch {}
-                    }}
-                    className="input-field cursor-pointer"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-graphite-600 mb-1 block">Hora (opcional)</label>
-                  <input
-                    type="time"
-                    value={form.hora}
-                    onChange={(e) => setForm({ ...form, hora: e.target.value })}
-                    className="input-field"
-                  />
-                </div>
+              <div>
+                <label className="text-xs text-graphite-600 mb-1 block">Fecha</label>
+                <input
+                  type="date"
+                  value={form.fecha}
+                  onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    if (e.clientX > rect.right - 30) return
+                    try {
+                      e.currentTarget.showPicker?.()
+                    } catch {}
+                  }}
+                  className="input-field cursor-pointer"
+                  required
+                />
               </div>
             )}
 
@@ -370,7 +329,6 @@ export default function Apuntes() {
               {verApunte.calendarizado && verApunte.fecha && (
                 <p style={{ color: verApunte.color_calendario }}>
                   Calendarizado: {format(parseISO(verApunte.fecha), "d 'de' MMMM, yyyy", { locale: es })}
-                  {verApunte.hora && ` a las ${verApunte.hora.slice(0, 5)}`}
                 </p>
               )}
             </div>
