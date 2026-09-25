@@ -9,6 +9,7 @@ import {
   TriangleAlert,
   Camera,
   ImageOff,
+  CalendarPlus,
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -25,6 +26,7 @@ import {
   validarFoto,
 } from '../lib/fotos'
 import { errorFechaSinClase } from '../lib/horario'
+import { descargarICS } from '../lib/ics'
 
 const FORM_VACIO = { titulo: '', descripcion: '', asignatura_id: '', fecha_entrega: '' }
 
@@ -473,6 +475,23 @@ export default function Tareas() {
                 <p>Entrega: {format(parseISO(verTarea.fecha_entrega), "d 'de' MMMM, yyyy", { locale: es })}</p>
               )}
             </div>
+
+            {verTarea.fecha_entrega && (
+              <button
+                onClick={() =>
+                  descargarICS({
+                    titulo: `Entregar: ${verTarea.titulo}`,
+                    fechaISO: verTarea.fecha_entrega,
+                    detalle: [getAsignatura(verTarea.asignatura_id)?.nombre, verTarea.descripcion]
+                      .filter(Boolean)
+                      .join(' — '),
+                  })
+                }
+                className="btn-secondary w-full flex items-center justify-center gap-1.5 text-xs mb-3"
+              >
+                <CalendarPlus size={14} /> Añadir al calendario del teléfono
+              </button>
+            )}
 
             {verTarea.descripcion && (
               <p className="text-sm text-graphite-800 mb-4 whitespace-pre-wrap">{verTarea.descripcion}</p>
