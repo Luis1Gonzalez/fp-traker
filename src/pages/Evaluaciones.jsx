@@ -370,27 +370,33 @@ export default function Evaluaciones() {
               ))}
             </select>
             <div className="grid grid-cols-2 gap-3">
-              <input
-                type="date"
-                value={form.fecha}
-                onChange={(e) => setForm({ ...form, fecha: e.target.value })}
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  if (e.clientX > rect.right - 30) return
-                  try {
-                    e.currentTarget.showPicker?.()
-                  } catch {}
-                }}
-                className="input-field cursor-pointer"
-                required
-              />
-              <input
-                type="time"
-                value={form.hora}
-                onChange={(e) => setForm({ ...form, hora: e.target.value })}
-                className="input-field"
-                required
-              />
+              <div>
+                <label className="text-xs text-graphite-600 mb-1 block">Fecha</label>
+                <input
+                  type="date"
+                  value={form.fecha}
+                  onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    if (e.clientX > rect.right - 30) return
+                    try {
+                      e.currentTarget.showPicker?.()
+                    } catch {}
+                  }}
+                  className="input-field cursor-pointer"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs text-graphite-600 mb-1 block">Hora</label>
+                <input
+                  type="time"
+                  value={form.hora}
+                  onChange={(e) => setForm({ ...form, hora: e.target.value })}
+                  className="input-field"
+                  required
+                />
+              </div>
             </div>
             <button type="submit" className="btn-primary mt-1">
               {editando ? 'Guardar cambios' : 'Crear evaluación'}

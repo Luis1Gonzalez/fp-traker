@@ -336,22 +336,25 @@ export default function Tareas() {
                   </option>
                 ))}
               </select>
-              <input
-                type="date"
-                value={form.fecha_entrega}
-                onChange={(e) => setForm({ ...form, fecha_entrega: e.target.value })}
-                onClick={(e) => {
-                  const rect = e.currentTarget.getBoundingClientRect()
-                  const enZonaDelIconoNativo = e.clientX > rect.right - 30
-                  if (enZonaDelIconoNativo) return // el navegador ya lo abre solo ahí
-                  try {
-                    e.currentTarget.showPicker?.()
-                  } catch {
-                    // Algunos navegadores bloquean showPicker en ciertos contextos.
-                  }
-                }}
-                className="input-field cursor-pointer"
-              />
+              <div>
+                <label className="text-xs text-graphite-600 mb-1 block">Entrega (opcional)</label>
+                <input
+                  type="date"
+                  value={form.fecha_entrega}
+                  onChange={(e) => setForm({ ...form, fecha_entrega: e.target.value })}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    const enZonaDelIconoNativo = e.clientX > rect.right - 30
+                    if (enZonaDelIconoNativo) return // el navegador ya lo abre solo ahí
+                    try {
+                      e.currentTarget.showPicker?.()
+                    } catch {
+                      // Algunos navegadores bloquean showPicker en ciertos contextos.
+                    }
+                  }}
+                  className="input-field cursor-pointer"
+                />
+              </div>
             </div>
 
             {/* Foto */}
