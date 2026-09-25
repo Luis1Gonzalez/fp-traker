@@ -28,7 +28,7 @@ export default function Dashboard() {
   const cargar = useCallback(async () => {
     const [tareasRes, evalRes, apuntesRes] = await Promise.all([
       supabase.from('tareas').select('id, titulo, fecha_entrega, asignatura_id, estado'),
-      supabase.from('evaluaciones').select('id, titulo, fecha, hora, asignatura_id'),
+      supabase.from('evaluaciones').select('id, titulo, fecha, asignatura_id'),
       supabase.from('apuntes').select('id, titulo, fecha, calendarizado, estado, asignatura_id'),
     ])
 
@@ -39,10 +39,8 @@ export default function Dashboard() {
     const apuntes = apuntesRes.data || []
 
     const tareasPendientes = tareas.filter((t) => t.estado === 'pendiente')
-    const evaluacionesPendientes = evaluaciones.filter((e) => {
-      const dt = parseISO(`${e.fecha}T${e.hora || '00:00'}`)
-      return dt > new Date()
-    })
+    // Sin hora: pendiente si es hoy o futuro (pasa a evaluada al día siguiente).
+    const evaluacionesPendientes = evaluaciones.filter((e) => e.fecha >= format(new Date(), 'yyyy-MM-dd'))
     const apuntesActivos = apuntes.filter((a) => a.estado === 'util')
 
     setStats({

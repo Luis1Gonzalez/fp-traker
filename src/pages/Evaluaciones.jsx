@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   startOfMonth,
@@ -17,22 +17,20 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useAsignaturas } from '../context/AsignaturasContext'
 import { falla, notificar } from '../lib/notificar'
-import { horaSugerida, errorFechaHoraSinClase } from '../lib/horario'
+import { errorFechaSinClase } from '../lib/horario'
 import ElegirEvento from '../components/ElegirEvento'
 
-const FORM_VACIO = { titulo: '', evaluado: '', asignatura_id: '', fecha: '', hora: '' }
+const FORM_VACIO = { titulo: '', evaluado: '', asignatura_id: '', fecha: '' }
 
 function notaClases(nota) {
   if (nota === null || nota === undefined || nota === '') return 'bg-graphite-700/10 text-graphite-600'
   return Number(nota) >= 5 ? 'bg-ok/10 text-ok' : 'bg-danger/10 text-danger'
 }
 
-function fechaHora(ev) {
-  return parseISO(`${ev.fecha}T${ev.hora || '00:00'}`)
-}
-
+// Pendiente = hoy o en el futuro (sin hora, todo el día de la evaluación
+// cuenta como pendiente; pasa a "evaluada" al día siguiente).
 function esPendiente(ev) {
-  return fechaHora(ev) > new Date()
+  return ev.fecha >= format(new Date(), 'yyyy-MM-dd')
 }
 
 function semanasLunVie(mesActual) {
@@ -58,33 +56,20 @@ export default function Evaluaciones() {
   const [form, setForm] = useState(FORM_VACIO)
   const [elegirDia, setElegirDia] = useState(null) // { dia, evs } cuando hay que elegir
   const [horario, setHorario] = useState([])
-  const ultimaSugerenciaRef = useRef(null) // para no pisar una hora que el usuario ya tocó a mano
 
   useEffect(() => {
     supabase
       .from('horario')
-      .select('asignatura_id, dia_semana, hora_inicio, hora_fin')
+      .select('asignatura_id, dia_semana')
       .then(({ data, error }) => {
-        if (error) return console.error('No se pudo cargar el horario para sugerir la hora', error)
+        if (error) return console.error('No se pudo cargar el horario para validar la fecha', error)
         setHorario(data)
       })
   }, [])
 
-  // Si hay materia y fecha, sugiere la hora de esa clase ese día. Solo si el
-  // usuario no ha escrito ya una hora distinta a mano.
-  useEffect(() => {
-    const sugerida = horaSugerida(horario, form.asignatura_id, form.fecha)
-    if (sugerida && (form.hora === '' || form.hora === ultimaSugerenciaRef.current)) {
-      setForm((f) => ({ ...f, hora: sugerida }))
-    }
-    ultimaSugerenciaRef.current = sugerida
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.asignatura_id, form.fecha, horario])
-
-  // La fecha, la hora y la materia deben corresponder a una clase real de esa
-  // asignatura (día + hora dentro del tramo). Si la asignatura no tiene
-  // horario cargado, no hay con qué comprobar y se deja pasar.
-  const fechaHoraError = errorFechaHoraSinClase(horario, form.asignatura_id, form.fecha, form.hora)
+  // La fecha debe caer en un día que le toque clase a esa asignatura. Si la
+  // asignatura no tiene horario cargado, no hay con qué comprobar y se deja pasar.
+  const fechaError = errorFechaSinClase(horario, form.asignatura_id, form.fecha)
 
   const fetchEvaluaciones = useCallback(async () => {
     const { data, error } = await supabase.from('evaluaciones').select('*').order('fecha', { ascending: true })
@@ -99,7 +84,6 @@ export default function Evaluaciones() {
   function abrirNueva() {
     setEditando(null)
     setForm(FORM_VACIO)
-    ultimaSugerenciaRef.current = null
     setShowForm(true)
   }
 
@@ -111,22 +95,20 @@ export default function Evaluaciones() {
 
   function abrirEditar(ev) {
     setEditando(ev)
-    ultimaSugerenciaRef.current = null
     setForm({
       titulo: ev.titulo,
       evaluado: ev.evaluado || '',
       asignatura_id: ev.asignatura_id,
       fecha: ev.fecha,
-      hora: ev.hora || '',
     })
     setShowForm(true)
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.titulo.trim() || !form.asignatura_id || !form.fecha || !form.hora) return
-    if (fechaHoraError) {
-      notificar(fechaHoraError)
+    if (!form.titulo.trim() || !form.asignatura_id || !form.fecha) return
+    if (fechaError) {
+      notificar(fechaError)
       return
     }
 
@@ -135,7 +117,7 @@ export default function Evaluaciones() {
       evaluado: form.evaluado.trim() || null,
       asignatura_id: form.asignatura_id,
       fecha: form.fecha,
-      hora: form.hora,
+      hora: null, // ya no se pide; limpia cualquier hora antigua al editar
     }
 
     const resultado = editando
@@ -166,7 +148,7 @@ export default function Evaluaciones() {
   }
 
   const pendientes = evaluaciones.filter(esPendiente)
-  const evaluadas = evaluaciones.filter((ev) => !esPendiente(ev)).sort((a, b) => fechaHora(b) - fechaHora(a))
+  const evaluadas = evaluaciones.filter((ev) => !esPendiente(ev)).sort((a, b) => b.fecha.localeCompare(a.fecha))
 
   const semanas = semanasLunVie(mesActual)
   const evaluacionesDelDia = (dia) => pendientes.filter((ev) => isSameDay(parseISO(ev.fecha), dia))
@@ -257,7 +239,6 @@ export default function Evaluaciones() {
                               }}
                               title={ev.titulo}
                             >
-                              {ev.hora?.slice(0, 5) ? `${ev.hora.slice(0, 5)} · ` : ''}
                               {ev.titulo}
                             </div>
                           )
@@ -278,7 +259,6 @@ export default function Evaluaciones() {
                 <th className="py-2 pr-3 font-medium">Materia</th>
                 <th className="py-2 pr-3 font-medium">Evaluado</th>
                 <th className="py-2 pr-3 font-medium">Fecha</th>
-                <th className="py-2 pr-3 font-medium">Hora</th>
                 <th className="py-2 pr-3 font-medium">Nota</th>
                 <th className="py-2 font-medium"></th>
               </tr>
@@ -297,7 +277,6 @@ export default function Evaluaciones() {
                     <td className="py-2 pr-3 font-mono text-xs">
                       {format(parseISO(ev.fecha), 'd MMM yyyy', { locale: es })}
                     </td>
-                    <td className="py-2 pr-3 font-mono text-xs">{ev.hora?.slice(0, 5) || '—'}</td>
                     <td className="py-2 pr-3">
                       <input
                         type="number"
@@ -325,8 +304,8 @@ export default function Evaluaciones() {
               })}
               {evaluadas.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-4 text-graphite-600 text-sm">
-                    Todavía no hay evaluaciones pasadas. Se mueven aquí solas en cuanto pasa su fecha y hora.
+                  <td colSpan={5} className="py-4 text-graphite-600 text-sm">
+                    Todavía no hay evaluaciones pasadas. Se mueven aquí solas al día siguiente de su fecha.
                   </td>
                 </tr>
               )}
@@ -339,7 +318,7 @@ export default function Evaluaciones() {
         <ElegirEvento
           titulo={format(elegirDia.dia, "EEEE d 'de' MMMM", { locale: es })}
           items={[...elegirDia.evs]
-            .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''))
+            .sort((a, b) => a.titulo.localeCompare(b.titulo))
             .map((ev) => {
               const asignatura = getAsignatura(ev.asignatura_id)
               return {
@@ -347,7 +326,7 @@ export default function Evaluaciones() {
                 value: ev,
                 color: asignatura?.color || '#2B4C6F',
                 titulo: ev.titulo,
-                detalle: [ev.hora?.slice(0, 5), asignatura?.nombre].filter(Boolean).join(' · '),
+                detalle: asignatura?.nombre ?? '',
               }
             })}
           onCerrar={() => setElegirDia(null)}
@@ -404,37 +383,25 @@ export default function Evaluaciones() {
                 </option>
               ))}
             </select>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-graphite-600 mb-1 block">Fecha</label>
-                <input
-                  type="date"
-                  value={form.fecha}
-                  onChange={(e) => setForm({ ...form, fecha: e.target.value })}
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    if (e.clientX > rect.right - 30) return
-                    try {
-                      e.currentTarget.showPicker?.()
-                    } catch {}
-                  }}
-                  className="input-field cursor-pointer"
-                  required
-                />
-              </div>
-              <div>
-                <label className="text-xs text-graphite-600 mb-1 block">Hora</label>
-                <input
-                  type="time"
-                  value={form.hora}
-                  onChange={(e) => setForm({ ...form, hora: e.target.value })}
-                  className="input-field"
-                  required
-                />
-              </div>
+            <div>
+              <label className="text-xs text-graphite-600 mb-1 block">Fecha</label>
+              <input
+                type="date"
+                value={form.fecha}
+                onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  if (e.clientX > rect.right - 30) return
+                  try {
+                    e.currentTarget.showPicker?.()
+                  } catch {}
+                }}
+                className="input-field cursor-pointer"
+                required
+              />
             </div>
-            {fechaHoraError && <p className="text-danger text-xs -mt-2">{fechaHoraError}</p>}
-            <button type="submit" disabled={!!fechaHoraError} className="btn-primary mt-1">
+            {fechaError && <p className="text-danger text-xs -mt-2">{fechaError}</p>}
+            <button type="submit" disabled={!!fechaError} className="btn-primary mt-1">
               {editando ? 'Guardar cambios' : 'Crear evaluación'}
             </button>
             {editando && (

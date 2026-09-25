@@ -43,25 +43,3 @@ export function errorFechaSinClase(horario, asignaturaId, fechaISO) {
 
   return `Ese día no tienes clase de esta asignatura. Días con clase: ${dias.map((d) => NOMBRE_DIA[d]).join(', ')}.`
 }
-
-// Como errorFechaSinClase, pero además exige que la hora caiga dentro del
-// tramo de alguna clase de ese día (hora_inicio ≤ hora < hora_fin). Requiere
-// que el horario traiga hora_fin (no solo hora_inicio como horaSugerida).
-export function errorFechaHoraSinClase(horario, asignaturaId, fechaISO, horaHHMM) {
-  const errorDia = errorFechaSinClase(horario, asignaturaId, fechaISO)
-  if (errorDia) return errorDia
-  if (!horaHHMM) return null
-
-  const dias = diasConClase(horario, asignaturaId)
-  if (dias.length === 0) return null // sin horario cargado: no se puede comprobar
-
-  const dia = diaSemanaDe(fechaISO)
-  const clasesEseDia = horario.filter((h) => h.asignatura_id === asignaturaId && h.dia_semana === dia)
-  const dentro = clasesEseDia.some(
-    (h) => horaHHMM >= h.hora_inicio.slice(0, 5) && horaHHMM < h.hora_fin.slice(0, 5),
-  )
-  if (dentro) return null
-
-  const franjas = clasesEseDia.map((h) => `${h.hora_inicio.slice(0, 5)}–${h.hora_fin.slice(0, 5)}`).join(', ')
-  return `A esa hora no tienes clase de esta asignatura. Ese día tienes: ${franjas}.`
-}
