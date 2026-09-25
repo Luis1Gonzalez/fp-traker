@@ -352,39 +352,37 @@ export default function Tareas() {
               className="input-field"
               rows={3}
             />
-            <div className="grid grid-cols-2 gap-3">
-              <select
-                value={form.asignatura_id}
-                onChange={(e) => setForm({ ...form, asignatura_id: e.target.value })}
-                className="input-field"
-                required
-              >
-                <option value="">Asignatura…</option>
-                {asignaturas.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.nombre}
-                  </option>
-                ))}
-              </select>
-              <div>
-                <label className="text-xs text-graphite-600 mb-1 block">Entrega (opcional)</label>
-                <input
-                  type="date"
-                  value={form.fecha_entrega}
-                  onChange={(e) => setForm({ ...form, fecha_entrega: e.target.value })}
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    const enZonaDelIconoNativo = e.clientX > rect.right - 30
-                    if (enZonaDelIconoNativo) return // el navegador ya lo abre solo ahí
-                    try {
-                      e.currentTarget.showPicker?.()
-                    } catch {
-                      // Algunos navegadores bloquean showPicker en ciertos contextos.
-                    }
-                  }}
-                  className="input-field cursor-pointer"
-                />
-              </div>
+            <select
+              value={form.asignatura_id}
+              onChange={(e) => setForm({ ...form, asignatura_id: e.target.value })}
+              className="input-field"
+              required
+            >
+              <option value="">Asignatura…</option>
+              {asignaturas.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.nombre}
+                </option>
+              ))}
+            </select>
+            <div>
+              <label className="text-xs text-graphite-600 mb-1 block">Entrega (opcional)</label>
+              <input
+                type="date"
+                value={form.fecha_entrega}
+                onChange={(e) => setForm({ ...form, fecha_entrega: e.target.value })}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect()
+                  const enZonaDelIconoNativo = e.clientX > rect.right - 30
+                  if (enZonaDelIconoNativo) return // el navegador ya lo abre solo ahí
+                  try {
+                    e.currentTarget.showPicker?.()
+                  } catch {
+                    // Algunos navegadores bloquean showPicker en ciertos contextos.
+                  }
+                }}
+                className="input-field cursor-pointer"
+              />
             </div>
             {fechaError && <p className="text-danger text-xs -mt-2">{fechaError}</p>}
 
