@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Plus, Trash2, Pencil, X, Check, CalendarClock } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { useAsignaturas } from '../context/AsignaturasContext'
 import { AsignaturaBadge } from '../components/Badges'
 import { falla } from '../lib/notificar'
+import { horaSugerida } from '../lib/horario'
 
 const FORM_VACIO = {
   titulo: '',
@@ -29,6 +30,30 @@ export default function Apuntes() {
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VACIO)
   const [verApunte, setVerApunte] = useState(null)
+  const [horario, setHorario] = useState([])
+  const ultimaSugerenciaRef = useRef(null) // para no pisar una hora que el usuario ya tocó a mano
+
+  useEffect(() => {
+    supabase
+      .from('horario')
+      .select('asignatura_id, dia_semana, hora_inicio')
+      .then(({ data, error }) => {
+        if (error) return console.error('No se pudo cargar el horario para sugerir la hora', error)
+        setHorario(data)
+      })
+  }, [])
+
+  // Si hay materia y fecha, sugiere la hora de esa clase ese día. Solo si el
+  // usuario no ha escrito ya una hora distinta a mano.
+  useEffect(() => {
+    if (!form.calendarizado) return
+    const sugerida = horaSugerida(horario, form.asignatura_id, form.fecha)
+    if (sugerida && (form.hora === '' || form.hora === ultimaSugerenciaRef.current)) {
+      setForm((f) => ({ ...f, hora: sugerida }))
+    }
+    ultimaSugerenciaRef.current = sugerida
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.asignatura_id, form.fecha, form.calendarizado, horario])
 
   const fetchApuntes = useCallback(async () => {
     const { data, error } = await supabase
@@ -47,11 +72,13 @@ export default function Apuntes() {
   function abrirNuevo() {
     setEditando(null)
     setForm(FORM_VACIO)
+    ultimaSugerenciaRef.current = null
     setShowForm(true)
   }
 
   function abrirEditar(a) {
     setEditando(a)
+    ultimaSugerenciaRef.current = null
     setForm({
       titulo: a.titulo,
       contenido: a.contenido || '',

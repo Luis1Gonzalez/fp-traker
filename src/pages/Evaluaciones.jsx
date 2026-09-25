@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   startOfMonth,
@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useAsignaturas } from '../context/AsignaturasContext'
 import { falla } from '../lib/notificar'
+import { horaSugerida } from '../lib/horario'
 import ElegirEvento from '../components/ElegirEvento'
 
 const FORM_VACIO = { titulo: '', evaluado: '', asignatura_id: '', fecha: '', hora: '' }
@@ -56,6 +57,29 @@ export default function Evaluaciones() {
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VACIO)
   const [elegirDia, setElegirDia] = useState(null) // { dia, evs } cuando hay que elegir
+  const [horario, setHorario] = useState([])
+  const ultimaSugerenciaRef = useRef(null) // para no pisar una hora que el usuario ya tocó a mano
+
+  useEffect(() => {
+    supabase
+      .from('horario')
+      .select('asignatura_id, dia_semana, hora_inicio')
+      .then(({ data, error }) => {
+        if (error) return console.error('No se pudo cargar el horario para sugerir la hora', error)
+        setHorario(data)
+      })
+  }, [])
+
+  // Si hay materia y fecha, sugiere la hora de esa clase ese día. Solo si el
+  // usuario no ha escrito ya una hora distinta a mano.
+  useEffect(() => {
+    const sugerida = horaSugerida(horario, form.asignatura_id, form.fecha)
+    if (sugerida && (form.hora === '' || form.hora === ultimaSugerenciaRef.current)) {
+      setForm((f) => ({ ...f, hora: sugerida }))
+    }
+    ultimaSugerenciaRef.current = sugerida
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.asignatura_id, form.fecha, horario])
 
   const fetchEvaluaciones = useCallback(async () => {
     const { data, error } = await supabase.from('evaluaciones').select('*').order('fecha', { ascending: true })
@@ -70,6 +94,7 @@ export default function Evaluaciones() {
   function abrirNueva() {
     setEditando(null)
     setForm(FORM_VACIO)
+    ultimaSugerenciaRef.current = null
     setShowForm(true)
   }
 
@@ -81,6 +106,7 @@ export default function Evaluaciones() {
 
   function abrirEditar(ev) {
     setEditando(ev)
+    ultimaSugerenciaRef.current = null
     setForm({
       titulo: ev.titulo,
       evaluado: ev.evaluado || '',
