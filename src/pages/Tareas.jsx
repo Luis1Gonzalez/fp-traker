@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import {
   Plus,
   Trash2,
@@ -61,6 +61,11 @@ export default function Tareas() {
   const [fotoActualPath, setFotoActualPath] = useState(null) // foto ya guardada al editar
   const [quitarFoto, setQuitarFoto] = useState(false)
   const [subiendo, setSubiendo] = useState(false)
+  // Guarda que ningún doble clic/Enter dispare un segundo guardado mientras el
+  // primero sigue en curso. Un ref (no el estado) porque su valor es
+  // inmediato: el estado tarda un render en reflejarse y un segundo clic muy
+  // rápido podría colarse antes de que el botón se vea deshabilitado.
+  const guardandoRef = useRef(false)
   const [verTarea, setVerTarea] = useState(null)
   const [comentarioDraft, setComentarioDraft] = useState('')
   const [horario, setHorario] = useState([])
@@ -117,11 +122,13 @@ export default function Tareas() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (guardandoRef.current) return
     if (!form.titulo.trim() || !form.asignatura_id) return
     if (fechaError) {
       notificar(fechaError)
       return
     }
+    guardandoRef.current = true
     setSubiendo(true)
 
     const fotoAnterior = editando?.foto_path || null
@@ -132,6 +139,7 @@ export default function Tareas() {
       const path = `${user.id}/${crypto.randomUUID()}.${extensionDe(fotoFile)}`
       const subida = await supabase.storage.from(BUCKET).upload(path, fotoFile)
       if (falla(subida, 'No se pudo subir la foto. La tarea no se guardó.')) {
+        guardandoRef.current = false
         setSubiendo(false)
         return
       }
@@ -153,12 +161,14 @@ export default function Tareas() {
 
     if (falla(resultado, 'No se pudo guardar la tarea.')) {
       await borrarFotos([fotoSubida]) // la foto recién subida quedaría huérfana
+      guardandoRef.current = false
       setSubiendo(false)
       return
     }
 
     if (foto_path !== fotoAnterior) await borrarFotos([fotoAnterior])
 
+    guardandoRef.current = false
     setSubiendo(false)
     setShowForm(false)
     fetchTareas()

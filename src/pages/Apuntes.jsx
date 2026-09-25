@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Plus, Trash2, Pencil, X, Check, CalendarClock } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -28,6 +28,10 @@ export default function Apuntes() {
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(FORM_VACIO)
   const [verApunte, setVerApunte] = useState(null)
+  const [guardando, setGuardando] = useState(false)
+  // Ref (no el estado) para que el bloqueo sea inmediato: el estado tarda un
+  // render en reflejarse y un segundo clic muy rápido podría colarse antes.
+  const guardandoRef = useRef(false)
 
   const fetchApuntes = useCallback(async () => {
     const { data, error } = await supabase
@@ -63,8 +67,11 @@ export default function Apuntes() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (guardandoRef.current) return
     if (!form.titulo.trim()) return
     if (form.calendarizado && !form.fecha) return
+    guardandoRef.current = true
+    setGuardando(true)
 
     const payload = {
       titulo: form.titulo.trim(),
@@ -81,6 +88,9 @@ export default function Apuntes() {
     const resultado = editando
       ? await supabase.from('apuntes').update(payload).eq('id', editando.id)
       : await supabase.from('apuntes').insert({ ...payload, user_id: user.id, estado: 'util' })
+
+    guardandoRef.current = false
+    setGuardando(false)
     if (falla(resultado, 'No se pudo guardar el apunte.')) return
 
     setShowForm(false)
@@ -292,8 +302,8 @@ export default function Apuntes() {
               </div>
             )}
 
-            <button type="submit" className="btn-primary mt-1">
-              {editando ? 'Guardar cambios' : 'Crear apunte'}
+            <button type="submit" disabled={guardando} className="btn-primary mt-1">
+              {guardando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear apunte'}
             </button>
           </form>
         </div>

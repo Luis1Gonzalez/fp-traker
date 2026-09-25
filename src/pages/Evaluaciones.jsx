@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Plus, Trash2, Pencil, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   startOfMonth,
@@ -56,6 +56,10 @@ export default function Evaluaciones() {
   const [form, setForm] = useState(FORM_VACIO)
   const [elegirDia, setElegirDia] = useState(null) // { dia, evs } cuando hay que elegir
   const [horario, setHorario] = useState([])
+  const [guardando, setGuardando] = useState(false)
+  // Ref (no el estado) para que el bloqueo sea inmediato: el estado tarda un
+  // render en reflejarse y un segundo clic muy rápido podría colarse antes.
+  const guardandoRef = useRef(false)
 
   useEffect(() => {
     supabase
@@ -106,11 +110,14 @@ export default function Evaluaciones() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (guardandoRef.current) return
     if (!form.titulo.trim() || !form.asignatura_id || !form.fecha) return
     if (fechaError) {
       notificar(fechaError)
       return
     }
+    guardandoRef.current = true
+    setGuardando(true)
 
     const payload = {
       titulo: form.titulo.trim(),
@@ -123,6 +130,9 @@ export default function Evaluaciones() {
     const resultado = editando
       ? await supabase.from('evaluaciones').update(payload).eq('id', editando.id)
       : await supabase.from('evaluaciones').insert({ ...payload, user_id: user.id })
+
+    guardandoRef.current = false
+    setGuardando(false)
     if (falla(resultado, 'No se pudo guardar la evaluación.')) return
 
     setShowForm(false)
@@ -401,8 +411,8 @@ export default function Evaluaciones() {
               />
             </div>
             {fechaError && <p className="text-danger text-xs -mt-2">{fechaError}</p>}
-            <button type="submit" disabled={!!fechaError} className="btn-primary mt-1">
-              {editando ? 'Guardar cambios' : 'Crear evaluación'}
+            <button type="submit" disabled={guardando || !!fechaError} className="btn-primary mt-1">
+              {guardando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear evaluación'}
             </button>
             {editando && (
               <button
