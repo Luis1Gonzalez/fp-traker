@@ -24,6 +24,7 @@ import {
   limpiarTareasTerminadas,
   validarFoto,
 } from '../lib/fotos'
+import { errorFechaSinClase } from '../lib/horario'
 
 const FORM_VACIO = { titulo: '', descripcion: '', asignatura_id: '', fecha_entrega: '' }
 
@@ -62,6 +63,21 @@ export default function Tareas() {
   const [subiendo, setSubiendo] = useState(false)
   const [verTarea, setVerTarea] = useState(null)
   const [comentarioDraft, setComentarioDraft] = useState('')
+  const [horario, setHorario] = useState([])
+
+  useEffect(() => {
+    supabase
+      .from('horario')
+      .select('asignatura_id, dia_semana')
+      .then(({ data, error }) => {
+        if (error) return console.error('No se pudo cargar el horario para validar la fecha', error)
+        setHorario(data)
+      })
+  }, [])
+
+  // Solo avisa si esa asignatura tiene horario cargado y ese día no le toca.
+  // Si no hay horario para esa asignatura, no hay con qué comprobar y se deja pasar.
+  const fechaError = errorFechaSinClase(horario, form.asignatura_id, form.fecha_entrega)
 
   const fetchTareas = useCallback(async () => {
     const { data, error } = await supabase
@@ -102,6 +118,10 @@ export default function Tareas() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.titulo.trim() || !form.asignatura_id) return
+    if (fechaError) {
+      notificar(fechaError)
+      return
+    }
     setSubiendo(true)
 
     const fotoAnterior = editando?.foto_path || null
@@ -356,6 +376,7 @@ export default function Tareas() {
                 />
               </div>
             </div>
+            {fechaError && <p className="text-danger text-xs -mt-2">{fechaError}</p>}
 
             {/* Foto */}
             <div>
@@ -402,7 +423,7 @@ export default function Tareas() {
               </label>
             </div>
 
-            <button type="submit" disabled={subiendo} className="btn-primary mt-1">
+            <button type="submit" disabled={subiendo || !!fechaError} className="btn-primary mt-1">
               {subiendo ? 'Guardando…' : editando ? 'Guardar cambios' : 'Crear tarea'}
             </button>
           </form>
