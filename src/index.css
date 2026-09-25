@@ -8,6 +8,9 @@
   }
   html {
     -webkit-text-size-adjust: 100%;
+    /* Refuerza el <meta color-scheme> del HTML: evita que los controles nativos
+       (input date/time, checkboxes) se pinten en oscuro en modo oscuro del móvil. */
+    color-scheme: light;
   }
   body {
     /* Un texto largo sin espacios (p. ej. un enlace) se parte en vez de ensanchar

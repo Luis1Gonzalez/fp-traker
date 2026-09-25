@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- La app solo tiene diseño claro. Sin esto, Safari/iOS pinta los controles
+         nativos (fecha, hora, checkbox) en oscuro cuando el sistema está en modo
+         oscuro: texto blanco sobre nuestro fondo blanco, ilegible. -->
+    <meta name="color-scheme" content="light" />
     <title>FP Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
