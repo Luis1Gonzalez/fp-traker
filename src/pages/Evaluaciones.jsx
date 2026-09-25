@@ -16,8 +16,8 @@ import { es } from 'date-fns/locale'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { useAsignaturas } from '../context/AsignaturasContext'
-import { falla } from '../lib/notificar'
-import { horaSugerida } from '../lib/horario'
+import { falla, notificar } from '../lib/notificar'
+import { horaSugerida, errorFechaHoraSinClase } from '../lib/horario'
 import ElegirEvento from '../components/ElegirEvento'
 
 const FORM_VACIO = { titulo: '', evaluado: '', asignatura_id: '', fecha: '', hora: '' }
@@ -63,7 +63,7 @@ export default function Evaluaciones() {
   useEffect(() => {
     supabase
       .from('horario')
-      .select('asignatura_id, dia_semana, hora_inicio')
+      .select('asignatura_id, dia_semana, hora_inicio, hora_fin')
       .then(({ data, error }) => {
         if (error) return console.error('No se pudo cargar el horario para sugerir la hora', error)
         setHorario(data)
@@ -80,6 +80,11 @@ export default function Evaluaciones() {
     ultimaSugerenciaRef.current = sugerida
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.asignatura_id, form.fecha, horario])
+
+  // La fecha, la hora y la materia deben corresponder a una clase real de esa
+  // asignatura (día + hora dentro del tramo). Si la asignatura no tiene
+  // horario cargado, no hay con qué comprobar y se deja pasar.
+  const fechaHoraError = errorFechaHoraSinClase(horario, form.asignatura_id, form.fecha, form.hora)
 
   const fetchEvaluaciones = useCallback(async () => {
     const { data, error } = await supabase.from('evaluaciones').select('*').order('fecha', { ascending: true })
@@ -120,6 +125,10 @@ export default function Evaluaciones() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.titulo.trim() || !form.asignatura_id || !form.fecha || !form.hora) return
+    if (fechaHoraError) {
+      notificar(fechaHoraError)
+      return
+    }
 
     const payload = {
       titulo: form.titulo.trim(),
@@ -424,7 +433,8 @@ export default function Evaluaciones() {
                 />
               </div>
             </div>
-            <button type="submit" className="btn-primary mt-1">
+            {fechaHoraError && <p className="text-danger text-xs -mt-2">{fechaHoraError}</p>}
+            <button type="submit" disabled={!!fechaHoraError} className="btn-primary mt-1">
               {editando ? 'Guardar cambios' : 'Crear evaluación'}
             </button>
             {editando && (
