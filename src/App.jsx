@@ -10,6 +10,7 @@ import Asignaturas from './pages/Asignaturas'
 import Tareas from './pages/Tareas'
 import Apuntes from './pages/Apuntes'
 import Evaluaciones from './pages/Evaluaciones'
+import Classroom from './pages/Classroom'
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/tareas" element={<Tareas />} />
         <Route path="/apuntes" element={<Apuntes />} />
         <Route path="/evaluaciones" element={<Evaluaciones />} />
+        <Route path="/classroom" element={<Classroom />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
