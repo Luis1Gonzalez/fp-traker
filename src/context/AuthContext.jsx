@@ -3,6 +3,17 @@ import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 
+// Borra la caché offline de datos de Supabase (la crea el service worker al
+// navegar; ver vite.config.js). Si falla (navegador sin esta API, etc.), no
+// pasa nada grave: solo quedaría una caché vieja que se irá sobrescribiendo.
+async function borrarCacheSinConexion() {
+  try {
+    await caches?.delete('datos-supabase')
+  } catch {
+    // no crítico
+  }
+}
+
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -49,7 +60,10 @@ export function AuthProvider({ children }) {
   const signInWithPassword = (email, password) =>
     supabase.auth.signInWithPassword({ email, password })
 
-  const signOut = () => supabase.auth.signOut()
+  const signOut = async () => {
+    await supabase.auth.signOut()
+    await borrarCacheSinConexion() // en un móvil compartido, que no quede visible lo del usuario anterior
+  }
 
   return (
     <AuthContext.Provider
