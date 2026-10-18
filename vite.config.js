@@ -13,7 +13,7 @@ export default defineConfig({
       // virtual:pwa-register/react, para poder mostrar el aviso de "hay una
       // versión nueva" con nuestro propio diseño en vez del genérico.
       injectRegister: false,
-      includeAssets: ['icons/apple-touch-icon.png'],
+      includeAssets: ['icons/apple-touch-icon.png', 'favicon.svg', 'favicon-32.png', 'favicon-16.png'],
       manifest: {
         name: 'FP Tracker',
         short_name: 'FP Tracker',
