@@ -10,6 +10,7 @@ import {
   GraduationCap,
   MoreHorizontal,
   Bell,
+  CalendarOff,
   X,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -24,6 +25,7 @@ const linksPrincipales = [
 
 const linksSecundariosBase = [
   { to: '/asignaturas', label: 'Materias', icon: BookMarked },
+  { to: '/ausencias', label: 'Ausencias', icon: CalendarOff },
   { to: '/classroom', label: 'Classroom', icon: Bell },
   { to: '/invitar', label: 'Invitar', icon: QrCode, soloAdmin: true },
 ]
