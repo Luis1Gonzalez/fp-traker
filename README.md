@@ -36,6 +36,7 @@ En el SQL Editor de Supabase, sobre un proyecto **nuevo** y en este orden (pega 
 9. `supabase/step12-horario-por-defecto.sql` — cambia el correo antes de ejecutarlo: esa cuenta es la que presta su horario a los invitados
 10. `supabase/step13-corregir-aulas.sql` — solo si vienes de una carga anterior con aulas mal cargadas; no aplica a una base nueva
 11. `supabase/step14-classroom.sql` — opcional, solo si vas a activar la sección Classroom (ver más abajo)
+12. `supabase/step15-ausencias.sql`
 
 Las asignaturas y el horario se crean desde la propia app (Materias y la pestaña Horario del panel). Un script de carga masiva con datos personales quedó fuera del repositorio a propósito.
 
