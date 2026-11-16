@@ -17,7 +17,9 @@ export default function Toaster() {
   if (avisos.length === 0) return null
 
   return (
-    <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-4 sm:w-80 z-[100] grid gap-2">
+    <div
+      className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-4 inset-x-4 sm:inset-x-auto sm:right-4 sm:w-80 z-[100] grid gap-2"
+    >
       {avisos.map((a) => (
         <div
           key={a.id}

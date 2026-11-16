@@ -19,7 +19,9 @@ export default function ActualizarPWA() {
   if (!needRefresh && !offlineReady) return null
 
   return (
-    <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-4 sm:w-80 z-[100]">
+    <div
+      className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:bottom-4 inset-x-4 sm:inset-x-auto sm:right-4 sm:w-80 z-[100]"
+    >
       <div className="card p-3 shadow-lg flex items-center justify-between gap-3">
         <p className="text-xs text-graphite-800 flex-1">
           {needRefresh
